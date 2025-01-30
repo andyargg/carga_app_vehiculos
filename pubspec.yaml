@@ -14,8 +14,10 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  firebase_core: 3.10.1
+  firebase_core: ^3.10.1
   cloud_firestore: ^5.6.2
+  json: ^0.20.4
+  searchfield: ^1.2.4
 
 dev_dependencies:
   flutter_test:
@@ -29,8 +31,6 @@ flutter:
  
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/data.json
 
