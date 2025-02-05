@@ -18,7 +18,7 @@ class _FormPageState extends State<FormPage> {
   final _formKey = GlobalKey<FormState>();
   final VehicleRepository _repository = VehicleRepository(FirebaseFirestore.instance);
   
-  final Map<String, String> _formValues = {
+  Map<String, String> _formValues = {
     'patent': '',
     'technician': '',
     'order': '',
@@ -67,6 +67,7 @@ class _FormPageState extends State<FormPage> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
+
     try {
       final vehicle = Vehicle(
         date: Timestamp.now(),
@@ -84,22 +85,47 @@ class _FormPageState extends State<FormPage> {
       );
 
       await _repository.save(vehicle);
-      _showSuccess('Vehicle registered successfully');
+      _showSuccess('Vehículo registrado exitosamente');
       _resetForm();
     } catch (e) {
-      _showError('Error saving vehicle: ${e.toString()}');
+      _showError('Error al guardar el vehículo: ${e.toString()}');
     }
   }
 
-  void _resetForm() {
-    _formKey.currentState?.reset();
+ void _resetForm() {
+  
+    _formKey.currentState!.reset();
+
+    // Aquí puedes limpiar también las listas o valores necesarios
     setState(() {
-      _formValues.updateAll((_, __) => '');
+      _formValues = {
+        'patent': '',
+        'technician': '',
+        'order': '',
+        'cleanliness': '',
+        'water': '',
+        'spareTire': '',
+        'oil': '',
+        'jack': '',
+        'crossWrench': '',
+        'fireExtinguisher': '',
+        'lock': '',
+        'comment': '',
+      };
+      // Aquí también puedes limpiar las listas de opciones si es necesario
+      _tecnicos.clear(); _patentes.clear();
     });
   }
 
+
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
+    
     if (_isLoading) return const Center(child: CircularProgressIndicator());
 
     return Scaffold(
@@ -121,7 +147,7 @@ class _FormPageState extends State<FormPage> {
               ),
               const SizedBox(height: 20),
               SearchFieldWidget(
-                hint: 'Search Technician',
+                hint: 'Busca tecnico',
                 suggestions: _tecnicos,
                 formKey: 'technician',
                 formValues: _formValues,
@@ -131,7 +157,7 @@ class _FormPageState extends State<FormPage> {
               ),
               const SizedBox(height: 20),
               DropdownWidget(
-                label: 'Order Condition',
+                label: 'Orden',
                 options: _formOptions['cleanliness']!,
                 formKey: 'order', 
                 formValues: _formValues,
@@ -141,7 +167,7 @@ class _FormPageState extends State<FormPage> {
               ),
               const SizedBox(height: 20),
               DropdownWidget(
-                label: 'Cleanliness',
+                label: 'Limpieza',
                 options: _formOptions['cleanliness']!,
                 formKey: 'cleanliness',
                 formValues: _formValues,
@@ -154,7 +180,7 @@ class _FormPageState extends State<FormPage> {
               TextFormField(
                 maxLines: 3,
                 decoration: const InputDecoration(
-                  labelText: 'Comments',
+                  labelText: 'Comentario',
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (value) => _formValues['comment'] = value,
@@ -162,7 +188,7 @@ class _FormPageState extends State<FormPage> {
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: _submitForm,
-                child: const Text('SUBMIT', style: TextStyle(fontSize: 16)),
+                child: const Text('ENVIAR', style: TextStyle(fontSize: 16)),
               ),
             ],
           ),
@@ -173,13 +199,13 @@ class _FormPageState extends State<FormPage> {
 
   List<Widget> _buildYesNoFields() {
     const fields = {
-      'water': 'Water',
-      'spareTire': 'Spare Tire',
-      'oil': 'Oil',
-      'jack': 'Jack',
-      'crossWrench': 'Cross Wrench',
-      'fireExtinguisher': 'Fire Extinguisher',
-      'lock': 'Lock',
+      'water': 'Agua',
+      'spareTire': 'Rueda de auxilio',
+      'oil': 'Aceite',
+      'jack': 'Crique',
+      'crossWrench': 'Llave cruz',
+      'fireExtinguisher': 'Extinguidor',
+      'lock': 'Candado',
     };
 
     return fields.entries.map((entry) => Padding(

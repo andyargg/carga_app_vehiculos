@@ -17,19 +17,19 @@ class SearchFieldWidget extends StatelessWidget {
     required this.onItemSelected,
   }) : super(key: key);
 
-  @override
+@override
 Widget build(BuildContext context) {
   return SearchField<String>(
-    suggestions: suggestions
-        .map((s) => SearchFieldListItem<String>(s, item: s))
-        .toList(),
+    suggestions: suggestions.isNotEmpty 
+    ? suggestions.map((s) => SearchFieldListItem<String>(s, item: s)).toList()
+    : [SearchFieldListItem<String>('No hay sugerencias disponibles')],
+
     hint: hint,
-    validator: (value) => value?.isEmpty ?? true ? 'Required field' : null,
     onSuggestionTap: (item) {
-      if (item.item != null) {
+      if (item.item != null && suggestions.contains(item.item!)) {
         onItemSelected(item.item!);
-      }
-    },
-  );
-}
+        }
+     },
+   );
+  }
 }
