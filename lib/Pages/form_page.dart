@@ -1,7 +1,7 @@
 import 'package:app_camionetas_empleado/Models/vehicle.dart';
 import 'package:app_camionetas_empleado/Services/vehicle_repository.dart';
 import 'package:app_camionetas_empleado/Widgets/dropdown_widget.dart';
-import 'package:app_camionetas_empleado/Widgets/search_field_widget.dart';
+import 'package:app_camionetas_empleado/Widgets/search_anchor_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +17,8 @@ class FormPage extends StatefulWidget {
 class _FormPageState extends State<FormPage> {
   final _formKey = GlobalKey<FormState>();
   final VehicleRepository _repository = VehicleRepository(FirebaseFirestore.instance);
+  final _patenteController = TextEditingController();
+  final _tecnicoController = TextEditingController();
   
   Map<String, String> _formValues = {
     'patent': '',
@@ -48,6 +50,13 @@ class _FormPageState extends State<FormPage> {
     _loadInitialData();
   }
 
+  @override
+  void dispose() {
+    _patenteController.dispose();
+    _tecnicoController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadInitialData() async {
     try {
       final response = await rootBundle.loadString('assets/data.json');
@@ -66,7 +75,6 @@ class _FormPageState extends State<FormPage> {
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-
 
     try {
       final vehicle = Vehicle(
@@ -92,11 +100,7 @@ class _FormPageState extends State<FormPage> {
     }
   }
 
- void _resetForm() {
-  
-    _formKey.currentState!.reset();
-
-    // Aquí puedes limpiar también las listas o valores necesarios
+  void _resetForm() {
     setState(() {
       _formValues = {
         'patent': '',
@@ -112,20 +116,20 @@ class _FormPageState extends State<FormPage> {
         'lock': '',
         'comment': '',
       };
-      // Aquí también puedes limpiar las listas de opciones si es necesario
-      _tecnicos.clear(); _patentes.clear();
+    });
+    
+    _patenteController.clear();
+    _tecnicoController.clear();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _formKey.currentState?.reset();
+      }
     });
   }
 
-
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
-    
     if (_isLoading) return const Center(child: CircularProgressIndicator());
 
     return Scaffold(
@@ -136,21 +140,23 @@ class _FormPageState extends State<FormPage> {
           key: _formKey,
           child: Column(
             children: [
-              SearchFieldWidget(
+              SearchAnchorWidget(
                 hint: 'Patentes',
                 suggestions: _patentes,
                 formKey: 'patent',
                 formValues: _formValues,
+                controller: _patenteController,
                 onItemSelected: (value) {
                   setState(() => _formValues['patent'] = value);
                 },
               ),
               const SizedBox(height: 20),
-              SearchFieldWidget(
+              SearchAnchorWidget(
                 hint: 'Busca tecnico',
                 suggestions: _tecnicos,
                 formKey: 'technician',
                 formValues: _formValues,
+                controller: _tecnicoController,
                 onItemSelected: (value) {
                   setState(() => _formValues['technician'] = value);
                 },
@@ -162,7 +168,9 @@ class _FormPageState extends State<FormPage> {
                 formKey: 'order', 
                 formValues: _formValues,
                 onChanged: (value) {
-                  setState(() => _formValues['order'] = value!);
+                  if (value != null) {
+                    setState(() => _formValues['order'] = value);
+                  }
                 },
               ),
               const SizedBox(height: 20),
@@ -172,7 +180,9 @@ class _FormPageState extends State<FormPage> {
                 formKey: 'cleanliness',
                 formValues: _formValues,
                 onChanged: (value) {
-                  setState(() => _formValues['cleanliness'] = value!);
+                  if (value != null) {
+                    setState(() => _formValues['cleanliness'] = value);
+                  }
                 },
               ),
               ..._buildYesNoFields(),
@@ -216,7 +226,9 @@ class _FormPageState extends State<FormPage> {
         formKey: entry.key,
         formValues: _formValues,
         onChanged: (value) {
-          setState(() => _formValues[entry.key] = value!);
+          if (value != null) {
+            setState(() => _formValues[entry.key] = value);
+          }
         },
       ),
     )).toList();
