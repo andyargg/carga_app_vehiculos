@@ -145,8 +145,9 @@ class _FormPageState extends State<FormPage> {
                 suggestions: _patentes,
                 formKey: 'patent',
                 formValues: _formValues,
-                controller: _patenteController,
+              controller: _patenteController,
                 onItemSelected: (value) {
+                  
                   setState(() => _formValues['patent'] = value);
                 },
               ),
@@ -158,9 +159,11 @@ class _FormPageState extends State<FormPage> {
                 formValues: _formValues,
                 controller: _tecnicoController,
                 onItemSelected: (value) {
+                  
                   setState(() => _formValues['technician'] = value);
                 },
               ),
+
               const SizedBox(height: 20),
               DropdownWidget(
                 label: 'Orden',
