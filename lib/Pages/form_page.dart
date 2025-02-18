@@ -148,7 +148,7 @@ class _FormPageState extends State<FormPage> {
                 suggestions: _patentes,
                 formKey: 'patent',
                 formValues: _formValues,
-              controller: _patenteController,
+                controller: _patenteController,
                 onItemSelected: (value) {
                   
                   setState(() => _formValues['patent'] = value);

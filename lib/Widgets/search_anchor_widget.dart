@@ -45,7 +45,7 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
   void _updateSearchController() {
     if (_searchController.text != widget.controller.text) {
       _searchController.text = widget.controller.text;
-      _validateInput(_searchController.text);
+      // _validateInput(_searchController.text);
     }
   }
 
@@ -71,7 +71,10 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
   Widget build(BuildContext context) {
     return FormField<String>(
       initialValue: widget.formValues[widget.formKey],
-      validator: _validateInput,
+      validator: (value) {
+        final error = _validateInput(value);
+        return error;
+      },
       builder: (FormFieldState<String> field) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,7 +114,6 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
                       widget.onItemSelected('');
                     }
                     field.didChange(value);
-                    _validateInput(value);
                   },
                 );
               },
@@ -136,7 +138,6 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
                     widget.formValues[widget.formKey] = s;
                     widget.onItemSelected(s);
                     field.didChange(s);
-                    _validateInput(s);
                     searchController.closeView(s);
                   },
                 )).toList();
