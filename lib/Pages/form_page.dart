@@ -1,6 +1,7 @@
 import 'package:app_camionetas_empleado/Models/vehicle.dart';
 import 'package:app_camionetas_empleado/Services/vehicle_repository.dart';
 import 'package:app_camionetas_empleado/Widgets/dropdown_widget.dart';
+import 'package:app_camionetas_empleado/Widgets/nav_bar_widget.dart';
 import 'package:app_camionetas_empleado/Widgets/search_anchor_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -134,12 +135,14 @@ class _FormPageState extends State<FormPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Vehicle Registration')),
+      drawer: NavBarWidget(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
+              
               SearchAnchorWidget(
                 hint: 'Patentes',
                 suggestions: _patentes,
