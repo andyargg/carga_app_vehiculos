@@ -14,6 +14,7 @@
     final String crossWrench;
     final String fireExtinguisher;
     final String lock;
+    final String comment;
 
     const Vehicle({
       this.id,
@@ -29,6 +30,7 @@
       required this.crossWrench,
       required this.fireExtinguisher,
       required this.lock,
+      required this.comment,
     });
 
     factory Vehicle.fromFirestore(DocumentSnapshot doc) {
@@ -49,6 +51,7 @@
         crossWrench: data['crossWrench'] as String,
         fireExtinguisher: data['fireExtinguisher'] as String,
         lock: data['lock'] as String,
+        comment: data['comment'] as String,
       );
     }
 
@@ -66,6 +69,7 @@
         'crossWrench': crossWrench,
         'fireExtinguisher': fireExtinguisher,
         'lock': lock,
+        'comment': comment,
       };
     }
   }

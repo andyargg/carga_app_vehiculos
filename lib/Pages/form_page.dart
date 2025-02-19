@@ -16,6 +16,8 @@ class FormPage extends StatefulWidget {
 }
 
 class _FormPageState extends State<FormPage> {
+  List<Vehicle> _pendingVehicles = [];
+  int _editingVehicleIndex = -1;
   final _formKey = GlobalKey<FormState>();
   final VehicleRepository _repository = VehicleRepository(FirebaseFirestore.instance);
   final _patenteController = TextEditingController();
@@ -74,7 +76,7 @@ class _FormPageState extends State<FormPage> {
     }
   }
 
-  Future<void> _submitForm() async {
+  Future<void> _addForm() async {
     if (!_formKey.currentState!.validate()) return;
 
     try {
@@ -91,13 +93,21 @@ class _FormPageState extends State<FormPage> {
         crossWrench: _formValues['crossWrench']!,
         fireExtinguisher: _formValues['fireExtinguisher']!,
         lock: _formValues['lock']!,
+        comment: _formValues['comment']!,
       );
 
-      await _repository.save(vehicle);
-      _showSuccess('Vehículo registrado exitosamente');
+
+      if (_editingVehicleIndex > 0) {
+        _pendingVehicles[_editingVehicleIndex] = vehicle;
+        _editingVehicleIndex = -1;
+      } else {
+        _pendingVehicles.add(vehicle);
+      }
+      // await _repository.save(vehicle);
+      _showSuccess('Vehículo agregado exitosamente');
       _resetForm();
     } catch (e) {
-      _showError('Error al guardar el vehículo: ${e.toString()}');
+      _showError('Error al agregar el vehículo: ${e.toString()}');
     }
   }
 
@@ -117,6 +127,8 @@ class _FormPageState extends State<FormPage> {
         'lock': '',
         'comment': '',
       };
+      
+      _editingVehicleIndex = -1; // Resetear el índice de edición
     });
     
     _patenteController.clear();
@@ -134,8 +146,13 @@ class _FormPageState extends State<FormPage> {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Vehicle Registration')),
-      drawer: NavBarWidget(),
+      appBar: AppBar(title: const Text('Registro de vehiculos')),
+      drawer: NavBarWidget(
+        pendingVehicles: _pendingVehicles,
+        onEditVehicle: _handleEditVehicle,
+        onDeleteVehicle: _handleDeleteVehicle,
+        onSubmitAll: _submitAllVehicles,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -203,8 +220,8 @@ class _FormPageState extends State<FormPage> {
               ),
               const SizedBox(height: 30),
               ElevatedButton(
-                onPressed: _submitForm,
-                child: const Text('ENVIAR', style: TextStyle(fontSize: 16)),
+                onPressed: _addForm,
+                child: const Text('AGREGAR', style: TextStyle(fontSize: 16)),
               ),
             ],
           ),
@@ -250,5 +267,87 @@ class _FormPageState extends State<FormPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
+  }
+
+  void _handleEditVehicle(int index) {
+    final vehicle = _pendingVehicles[index];
+
+    setState(() {
+      _formValues = {
+        'patent': vehicle.patent,
+        'technician': vehicle.technician,
+        'order': vehicle.order,
+        'cleanliness': vehicle.cleanliness,
+        'water': vehicle.water,
+        'spareTire': vehicle.spareTire,
+        'oil': vehicle.oil,
+        'jack': vehicle.jack,
+        'crossWrench': vehicle.crossWrench,
+        'fireExtinguisher': vehicle.fireExtinguisher,
+        'lock': vehicle.lock,
+        'comment': vehicle.comment, 
+      };
+      
+      _patenteController.text = vehicle.patent;
+      _tecnicoController.text = vehicle.technician;
+      
+      _editingVehicleIndex = index;
+    });
+
+    Navigator.pop(context);
+  }
+
+  void _handleDeleteVehicle(int index) {
+    setState(() {
+      _pendingVehicles.removeAt(index);
+
+      if (_editingVehicleIndex == index) {
+        _resetForm();
+        _editingVehicleIndex = -1;
+      }
+      else if (_editingVehicleIndex > index) {
+        _editingVehicleIndex--;
+      }
+    });
+  }
+
+  Future<void> _submitAllVehicles() async {
+    if (_pendingVehicles.isEmpty) {
+      _showError('No hay vehículos pendientes para enviar');
+      return;
+    }
+
+    try {
+      // Mostrar indicador de carga
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Enviando vehículos...'),
+            ],
+          ),
+        ),
+      );
+
+      for (final vehicle in _pendingVehicles) {
+        await _repository.save(vehicle);
+      }
+
+      Navigator.pop(context);
+
+      _showSuccess('${_pendingVehicles.length} vehículos enviados exitosamente');
+      setState(() => _pendingVehicles.clear());
+    } catch (e) {
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      
+      _showError('Error al enviar los vehículos: ${e.toString()}');
+    }
   }
 }
