@@ -22,6 +22,7 @@ class _FormPageState extends State<FormPage> {
   final VehicleRepository _repository = VehicleRepository(FirebaseFirestore.instance);
   final _patenteController = TextEditingController();
   final _tecnicoController = TextEditingController();
+  final _commentController = TextEditingController();
   
   Map<String, String> _formValues = {
     'patent': '',
@@ -64,17 +65,15 @@ class _FormPageState extends State<FormPage> {
     try {
       final response = await rootBundle.loadString('assets/data.json');
       final data = json.decode(response) as Map<String, dynamic>;
-      
-      setState(() {
-        _patentes = List<String>.from(data['patentes']);
-        _tecnicos = List<String>.from(data['tecnicos']);
-        _isLoading = false;
-      });
+      _patentes = List<String>.from(data['patentes']);
+      _tecnicos = List<String>.from(data['tecnicos']);
     } catch (e) {
       _showError('Error loading initial data');
+    } finally {
       setState(() => _isLoading = false);
     }
   }
+
 
   Future<void> _addForm() async {
     if (!_formKey.currentState!.validate()) return;
@@ -97,49 +96,29 @@ class _FormPageState extends State<FormPage> {
       );
 
 
-      if (_editingVehicleIndex > 0) {
+      if (_editingVehicleIndex >= 0) {
         _pendingVehicles[_editingVehicleIndex] = vehicle;
         _editingVehicleIndex = -1;
       } else {
         _pendingVehicles.add(vehicle);
       }
-      // await _repository.save(vehicle);
       _showSuccess('Vehículo agregado exitosamente');
       _resetForm();
     } catch (e) {
       _showError('Error al agregar el vehículo: ${e.toString()}');
     }
   }
-
   void _resetForm() {
     setState(() {
-      _formValues = {
-        'patent': '',
-        'technician': '',
-        'order': '',
-        'cleanliness': '',
-        'water': '',
-        'spareTire': '',
-        'oil': '',
-        'jack': '',
-        'crossWrench': '',
-        'fireExtinguisher': '',
-        'lock': '',
-        'comment': '',
-      };
-      
-      _editingVehicleIndex = -1; // Resetear el índice de edición
-    });
-    
-    _patenteController.clear();
-    _tecnicoController.clear();
-    
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _formKey.currentState?.reset();
-      }
+      _patenteController.clear();
+      _tecnicoController.clear();
+      _commentController.clear();
+      _formKey.currentState?.reset();
+      _formValues.updateAll((key, value) => '');
+      _editingVehicleIndex = -1;
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -211,6 +190,7 @@ class _FormPageState extends State<FormPage> {
               ..._buildYesNoFields(),
               const SizedBox(height: 20),
               TextFormField(
+                controller: _commentController,
                 maxLines: 3,
                 decoration: const InputDecoration(
                   labelText: 'Comentario',
@@ -264,15 +244,19 @@ class _FormPageState extends State<FormPage> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    }
   }
 
-  void _handleEditVehicle(int index) {
-    final vehicle = _pendingVehicles[index];
 
+
+  void _handleEditVehicle(int index) {
     setState(() {
+      Navigator.of(context).pop();
+      _editingVehicleIndex = index;
+      final vehicle = _pendingVehicles[index];
+
       _formValues = {
         'patent': vehicle.patent,
         'technician': vehicle.technician,
@@ -285,69 +269,42 @@ class _FormPageState extends State<FormPage> {
         'crossWrench': vehicle.crossWrench,
         'fireExtinguisher': vehicle.fireExtinguisher,
         'lock': vehicle.lock,
-        'comment': vehicle.comment, 
+        'comment': vehicle.comment,
       };
-      
-      _patenteController.text = vehicle.patent;
-      _tecnicoController.text = vehicle.technician;
-      
-      _editingVehicleIndex = index;
+
+      // Sincronizar controladores con los valores editados
+      _patenteController.text = _formValues['patent']!;
+      _tecnicoController.text = _formValues['technician']!;
+      _commentController.text = _formValues['comment']!;
     });
 
-    Navigator.pop(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _formKey.currentState?.reset(); // Forzar revalidación del formulario
+      }
+    });
   }
-
   void _handleDeleteVehicle(int index) {
     setState(() {
       _pendingVehicles.removeAt(index);
-
       if (_editingVehicleIndex == index) {
         _resetForm();
-        _editingVehicleIndex = -1;
-      }
-      else if (_editingVehicleIndex > index) {
-        _editingVehicleIndex--;
       }
     });
   }
 
+
   Future<void> _submitAllVehicles() async {
-    if (_pendingVehicles.isEmpty) {
-      _showError('No hay vehículos pendientes para enviar');
-      return;
-    }
-
     try {
-      // Mostrar indicador de carga
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Enviando vehículos...'),
-            ],
-          ),
-        ),
-      );
-
       for (final vehicle in _pendingVehicles) {
         await _repository.save(vehicle);
       }
 
-      Navigator.pop(context);
-
-      _showSuccess('${_pendingVehicles.length} vehículos enviados exitosamente');
-      setState(() => _pendingVehicles.clear());
+      _pendingVehicles.clear();
+      _showSuccess('Todos los vehículos se han registrado correctamente.');
     } catch (e) {
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-      
-      _showError('Error al enviar los vehículos: ${e.toString()}');
+      _showError('Error al registrar los vehículos: ${e.toString()}');
     }
   }
+
 }

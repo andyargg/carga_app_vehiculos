@@ -43,9 +43,9 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
   }
 
   void _updateSearchController() {
-    if (_searchController.text != widget.controller.text) {
+      if (_searchController.text != widget.controller.text) {
       _searchController.text = widget.controller.text;
-      // _validateInput(_searchController.text);
+      widget.formValues[widget.formKey] = widget.controller.text;
     }
   }
 
@@ -70,11 +70,8 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
   @override
   Widget build(BuildContext context) {
     return FormField<String>(
-      initialValue: widget.formValues[widget.formKey],
-      validator: (value) {
-        final error = _validateInput(value);
-        return error;
-      },
+      initialValue: widget.controller.text,
+      validator: (value) => _validateInput(value),
       builder: (FormFieldState<String> field) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
