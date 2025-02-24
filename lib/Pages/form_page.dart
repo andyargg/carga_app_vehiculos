@@ -112,12 +112,12 @@ class _FormPageState extends State<FormPage> {
     setState(() {
       _patenteController.clear();
       _tecnicoController.clear();
-      _commentController.clear();
-      _formKey.currentState?.reset();
-      _formValues.updateAll((key, value) => '');
+      _commentController.clear(); 
+      _formValues.updateAll((key, value) => ''); 
       _editingVehicleIndex = -1;
     });
-  }
+}
+
 
 
   @override

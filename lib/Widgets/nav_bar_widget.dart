@@ -70,7 +70,7 @@ class _NavBarWidgetState extends State<NavBarWidget> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => widget.onDeleteVehicle(index),
+                            onPressed: () => _confirmDelete(context, index),
                             tooltip: 'Eliminar',
                           )
                         ],
@@ -108,7 +108,7 @@ class _NavBarWidgetState extends State<NavBarWidget> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('cancelar'),
+            child: const Text('Cancelar'),
           ),
           TextButton(
             onPressed: () {

@@ -1,0 +1,2 @@
+C:/Users/Andy/Andy/flutter/app_camionetas_e/android/app/.cxx/Debug/134o2t3u/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/Andy/Andy/flutter/app_camionetas_e/android/app/.cxx/Debug/134o2t3u/x86_64/CMakeFiles/rebuild_cache.dir

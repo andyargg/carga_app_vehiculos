@@ -70,6 +70,7 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
   @override
   Widget build(BuildContext context) {
     return FormField<String>(
+      key: ValueKey(widget.controller.text),
       initialValue: widget.controller.text,
       validator: (value) => _validateInput(value),
       builder: (FormFieldState<String> field) {
