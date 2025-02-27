@@ -5,6 +5,7 @@
     final Timestamp date;
     final String patent;
     final String technician;
+    final String company;
     final String order;
     final String cleanliness;
     final String water;
@@ -21,6 +22,7 @@
       required this.date,
       required this.patent,
       required this.technician,
+      required this.company,
       required this.order,
       required this.cleanliness,
       required this.water,
@@ -42,6 +44,7 @@
         date: data['date'] as Timestamp,
         patent: data['patent'] as String,
         technician: data['technician'] as String,
+        company: data['company'] as String,
         order: data['order'] as String,
         cleanliness: data['cleanliness'] as String,
         water: data['water'] as String,
@@ -60,6 +63,7 @@
         'date': date,
         'patent': patent,
         'technician': technician,
+        'company': company,
         'order': order,
         'cleanliness': cleanliness,
         'water': water,

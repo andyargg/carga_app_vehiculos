@@ -43,7 +43,7 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
   }
 
   void _updateSearchController() {
-      if (_searchController.text != widget.controller.text) {
+    if (_searchController.text != widget.controller.text) {
       _searchController.text = widget.controller.text;
       widget.formValues[widget.formKey] = widget.controller.text;
     }
@@ -61,7 +61,6 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
       setState(() => _errorText = error);
       return error;
     }
-
 
     setState(() => _errorText = null);
     return null;
@@ -84,6 +83,9 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
                 return SearchBar(
                   controller: searchController,
                   hintText: widget.hint,
+                  hintStyle: WidgetStateProperty.all(
+                    TextStyle(color: Colors.grey[600]),
+                  ),
                   leading: const Icon(Icons.search),
                   trailing: [
                     if (_searchController.text.isNotEmpty)
@@ -102,6 +104,14 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
                   padding: const WidgetStatePropertyAll<EdgeInsets>(
                     EdgeInsets.symmetric(horizontal: 16.0),
                   ),
+                  backgroundColor: WidgetStateProperty.all(Colors.white),
+                  elevation: WidgetStateProperty.all(0), 
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(color: Colors.grey, width: 2), 
+                    ),
+                  ),
                   onTap: () {
                     searchController.openView();
                   },
@@ -117,28 +127,44 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
               },
               suggestionsBuilder: (BuildContext context, SearchController searchController) {
                 final query = searchController.text.toLowerCase();
-               
 
                 final filteredSuggestions = widget.suggestions
                     .where((s) => s.toLowerCase().contains(query))
                     .toList();
-                
+
                 if (filteredSuggestions.isEmpty) {
                   return [
                     const ListTile(title: Text('No hay sugerencias disponibles'))
                   ];
                 }
-                
-                return filteredSuggestions.map((s) => ListTile(
-                  title: Text(s),
-                  onTap: () {
-                    widget.controller.text = s;
-                    widget.formValues[widget.formKey] = s;
-                    widget.onItemSelected(s);
-                    field.didChange(s);
-                    searchController.closeView(s);
+
+                return List.generate(
+                  filteredSuggestions.length,
+                  (index) {
+                    final suggestion = filteredSuggestions[index];
+                    return Column(
+                      children: [
+                        ListTile(
+                          title: Text(
+                            suggestion,
+                            style: const TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                          onTap: () {
+                            widget.controller.text = suggestion;
+                            widget.formValues[widget.formKey] = suggestion;
+                            widget.onItemSelected(suggestion);
+                            field.didChange(suggestion);
+                            searchController.closeView(suggestion);
+                          },
+                        ),
+                        if (index < filteredSuggestions.length - 1)
+                          const Divider(height: 1, thickness: 1),
+                      ],
+                    );
                   },
-                )).toList();
+                );
               },
             ),
             if (_errorText != null || field.hasError)
