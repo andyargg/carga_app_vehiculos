@@ -69,7 +69,7 @@ class _NavBarWidgetState extends State<NavBarWidget> {
                       elevation: 2,
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: const Color.fromARGB(255, 185, 175, 175),
+                          backgroundColor: const Color.fromARGB(255, 108, 141, 219),
                           child: Text(
                             '${index +1}',
                             style: const TextStyle(
@@ -90,7 +90,7 @@ class _NavBarWidgetState extends State<NavBarWidget> {
                           'Tecnico: ${vehicle.technician}',
                           style: const TextStyle(
                             fontSize: 12,
-                            color: Colors.grey,
+                            color: Colors.black,
                           ),
                         ),
                         trailing: Row(
@@ -118,7 +118,7 @@ class _NavBarWidgetState extends State<NavBarWidget> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton.icon(
-                    onPressed: widget.onSubmitAll,
+                    onPressed: () => _confirmSend(context),
                     icon: const Icon(
                       Icons.send,
                       color: Colors.white,
@@ -186,6 +186,49 @@ class _NavBarWidgetState extends State<NavBarWidget> {
             )
           )
 
+        ],
+      )
+    );
+  }
+  void _confirmSend(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Confirmar envio',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold
+          ),
+        ),
+        content: Text(
+          '¿Estas seguro de enviar los vehiculos?',
+          style: TextStyle(
+            fontSize: 16
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(
+                color: Colors.grey
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              widget.onSubmitAll();
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Enviar',
+              style: TextStyle(
+                color: Color.fromARGB(255, 109, 165, 239)
+              ),
+            )
+          )
         ],
       )
     );

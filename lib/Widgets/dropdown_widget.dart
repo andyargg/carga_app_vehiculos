@@ -7,6 +7,7 @@ class DropdownWidget extends StatelessWidget {
   final Map<String, String> formValues;
   final Function(String?) onChanged;
   final IconData? prefixIcon;
+  final Color? prefixIconColor;
 
   const DropdownWidget({
     Key? key,
@@ -15,7 +16,8 @@ class DropdownWidget extends StatelessWidget {
     required this.formKey,
     required this.formValues,
     required this.onChanged,
-    this.prefixIcon
+    this.prefixIcon,
+    this.prefixIconColor,
   }) : super(key: key);
 
   @override
@@ -27,7 +29,9 @@ class DropdownWidget extends StatelessWidget {
         labelStyle: TextStyle(color: Colors.grey[600]),
         filled: true,
         fillColor: Colors.white,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Colors.grey[600]) : null,
+        prefixIcon: prefixIcon != null 
+          ? Icon(prefixIcon, color: prefixIconColor ?? Colors.grey[600]) 
+          : null,
         border: OutlineInputBorder( 
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: Colors.grey, width: 3), 
@@ -43,9 +47,13 @@ class DropdownWidget extends StatelessWidget {
       ),
       items: options.map((option) => DropdownMenuItem(
         value: option,
-        child: Text(
-          option,
-          style: TextStyle(color: Colors.black87),
+        child: Column(
+          children: [
+            Text(
+              option,
+              style: TextStyle(color: Colors.black87),
+            ),
+          ]
         ),
       )).toList(),
       validator: (value) => value == null ? 'Este campo es requerido' : null,
@@ -57,7 +65,6 @@ class DropdownWidget extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       menuMaxHeight: 200,
       elevation: 2, // elevación del boton desplegable
-
     );
   }
 }

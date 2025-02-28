@@ -25,7 +25,16 @@ class _FormPageState extends State<FormPage> {
   final _tecnicoController = TextEditingController();
   final _empresaController = TextEditingController();
   final _commentController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   
+  void _scrollToTop() {
+    _scrollController.animateTo(
+      0, // Desplazarse hasta la posición 0 (arriba)
+      duration: Duration(milliseconds: 500), // Duración de la animación
+      curve: Curves.easeInOut, // Curva de animación
+    );
+  }
+
   Map<String, String> _formValues = {
     'patent': '',
     'technician': '',
@@ -82,6 +91,7 @@ class _FormPageState extends State<FormPage> {
 
 
   Future<void> _addForm() async {
+    _scrollToTop();
     FocusScope.of(context).requestFocus(FocusNode()); 
     if (!_formKey.currentState!.validate()) return;
 
@@ -139,16 +149,16 @@ class _FormPageState extends State<FormPage> {
         title: const Text(
           'Registro de vehículos',
           style: TextStyle(
-            fontSize: 20, // Tamaño del texto
-            fontWeight: FontWeight.bold, // Negrita
-            color: Colors.white, // Color del texto
+            fontSize: 20, 
+            fontWeight: FontWeight.bold, 
+            color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.black, // Color de fondo de la AppBar
-        elevation: 4, // Sombra de la AppBar
-        centerTitle: true, // Centrar el título
+        backgroundColor: Colors.black, 
+        elevation: 4,
+        centerTitle: true,
         iconTheme: const IconThemeData(
-          color: Colors.white, // Color de los íconos (por ejemplo, el de apertura del Drawer)
+          color: Colors.white, 
         ),
       ),
       drawer: NavBarWidget(
@@ -158,6 +168,7 @@ class _FormPageState extends State<FormPage> {
         onSubmitAll: _submitAllVehicles,
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
@@ -209,6 +220,7 @@ class _FormPageState extends State<FormPage> {
                   }
                 },
                 prefixIcon: Icons.grid_view,
+                prefixIconColor: Colors.deepOrange,
               ),
               const SizedBox(height: 20),
               DropdownWidget(
@@ -222,6 +234,7 @@ class _FormPageState extends State<FormPage> {
                   }
                 },
                 prefixIcon: Icons.cleaning_services_outlined,
+                prefixIconColor: Colors.brown,
               ),
               const SizedBox(height: 20),
               ..._buildYesNoFields(),
@@ -235,9 +248,20 @@ class _FormPageState extends State<FormPage> {
                 onChanged: (value) => _formValues['comment'] = value,
               ),
               const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: _addForm,
-                child: const Text('AGREGAR', style: TextStyle(fontSize: 16)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white, // Para el color del texto
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    ),
+                    onPressed: _addForm,
+                    child: const Text('AGREGAR', style: TextStyle(fontSize: 16)),
+                  ),
+                ),
               ),
             ],
           ),
@@ -250,19 +274,19 @@ class _FormPageState extends State<FormPage> {
 
   List<Widget> _buildYesNoFields() {
     final fields = {
-      'water': {'label': 'Agua', 'icon': Icons.water_drop},
-      'spareTire': {'label': 'Rueda de auxilio', 'icon': Icons.tire_repair},
-      'oil': {'label': 'Aceite', 'icon': Icons.oil_barrel},
-      'jack': {'label': 'Crique', 'icon': Icons.car_repair},
-      'crossWrench': {'label': 'Llave cruz', 'icon': Icons.build},
-      'fireExtinguisher': {'label': 'Extintor', 'icon': Icons.fire_extinguisher},
-      'lock': {'label': 'Candado', 'icon': Icons.lock},
+      'water': {'label': 'Agua', 'icon': Icons.water_drop, 'color': Colors.blue},
+      'spareTire': {'label': 'Rueda de auxilio', 'icon': Icons.tire_repair, 'color': Colors.black},
+      'oil': {'label': 'Aceite', 'icon': Icons.oil_barrel, 'color': Colors.green},
+      'jack': {'label': 'Crique', 'icon': Icons.car_repair, 'color': Colors.orange},
+      'crossWrench': {'label': 'Llave cruz', 'icon': Icons.build, 'color': Colors.black},
+      'fireExtinguisher': {'label': 'Extintor', 'icon': Icons.fire_extinguisher, 'color': Colors.red},
+      'lock': {'label': 'Candado', 'icon': Icons.lock, 'color': Color.fromRGBO(189, 165, 29, 1)},
     };
 
     return fields.entries.map((entry) => Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: DropdownWidget(
-        label: entry.value['label'] as String, // Se obtiene el String correcto
+        label: entry.value['label'] as String,
         options: _formOptions['yesNo']!,
         formKey: entry.key,
         formValues: _formValues,
@@ -271,7 +295,8 @@ class _FormPageState extends State<FormPage> {
             setState(() => _formValues[entry.key] = value);
           }
         },
-        prefixIcon: entry.value['icon'] as IconData?, // Correcto, // Se envuelve en Icon()
+        prefixIcon: entry.value['icon'] as IconData,
+        prefixIconColor: entry.value['color'] as Color,
       ),
     )).toList();
   }
@@ -322,7 +347,7 @@ class _FormPageState extends State<FormPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _formKey.currentState?.reset(); // Forzar revalidación del formulario
+        _formKey.currentState?.reset(); 
       }
     });
   }
@@ -335,18 +360,21 @@ class _FormPageState extends State<FormPage> {
     });
   }
 
-
   Future<void> _submitAllVehicles() async {
     try {
       for (final vehicle in _pendingVehicles) {
         await _repository.save(vehicle);
       }
-
-      _pendingVehicles.clear();
-      _showSuccess('Todos los vehículos se han registrado correctamente.');
+      if (mounted) {
+        Navigator.pop(context);
+        _pendingVehicles.clear();
+        _showSuccess('Todos los vehículos se han registrado correctamente.');
+      } // Usa el context del Estado
     } catch (e) {
       _showError('Error al registrar los vehículos: ${e.toString()}');
     }
   }
-
 }
+
+
+

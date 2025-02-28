@@ -160,7 +160,7 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
                           },
                         ),
                         if (index < filteredSuggestions.length - 1)
-                          const Divider(height: 1, thickness: 1),
+                          const Divider(height: 1, thickness: 1, color: Colors.blueGrey,),
                       ],
                     );
                   },
