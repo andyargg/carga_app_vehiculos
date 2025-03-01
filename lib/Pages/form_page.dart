@@ -1,12 +1,15 @@
 import 'package:app_camionetas_empleado/Models/vehicle.dart';
 import 'package:app_camionetas_empleado/Services/vehicle_repository.dart';
 import 'package:app_camionetas_empleado/Widgets/dropdown_widget.dart';
+import 'package:app_camionetas_empleado/Widgets/image_picker.dart';
 import 'package:app_camionetas_empleado/Widgets/nav_bar_widget.dart';
 import 'package:app_camionetas_empleado/Widgets/search_anchor_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+
+import 'package:image_picker/image_picker.dart';
 
 class FormPage extends StatefulWidget {
   const FormPage({super.key});
@@ -238,6 +241,9 @@ class _FormPageState extends State<FormPage> {
               ),
               const SizedBox(height: 20),
               ..._buildYesNoFields(),
+              ImagePickerWidget(
+
+              ),
               TextFormField(
                 controller: _commentController,
                 maxLines: 3,
