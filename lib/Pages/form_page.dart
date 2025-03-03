@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:app_camionetas_empleado/Models/vehicle.dart';
+import 'package:app_camionetas_empleado/Services/local_image_service.dart';
+import 'package:app_camionetas_empleado/Services/storage_services.dart';
 import 'package:app_camionetas_empleado/Services/vehicle_repository.dart';
 import 'package:app_camionetas_empleado/Widgets/dropdown_widget.dart';
 import 'package:app_camionetas_empleado/Widgets/image_picker.dart';
@@ -8,8 +12,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'package:path/path.dart' as path;
 
-import 'package:image_picker/image_picker.dart';
 
 class FormPage extends StatefulWidget {
   const FormPage({super.key});
@@ -20,6 +24,7 @@ class FormPage extends StatefulWidget {
 
 class _FormPageState extends State<FormPage> {
   // FocusNode _focusNode = FocusNode();
+
   List<Vehicle> _pendingVehicles = [];
   int _editingVehicleIndex = -1;
   final _formKey = GlobalKey<FormState>();
@@ -29,6 +34,7 @@ class _FormPageState extends State<FormPage> {
   final _empresaController = TextEditingController();
   final _commentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  String? _selectedImagePath;
   
   void _scrollToTop() {
     _scrollController.animateTo(
@@ -99,6 +105,13 @@ class _FormPageState extends State<FormPage> {
     if (!_formKey.currentState!.validate()) return;
 
     try {
+      String? localImagePath;
+
+      if (_selectedImagePath != null) {
+        final fileName = '${DateTime.now().millisecondsSinceEpoch}_${path.basename(_selectedImagePath!)}';
+        localImagePath = await LocalImageService.saveImage(File(_selectedImagePath!), fileName);
+      }
+
       final vehicle = Vehicle(
         date: Timestamp.now(),
         patent: _formValues['patent']!,
@@ -114,6 +127,8 @@ class _FormPageState extends State<FormPage> {
         fireExtinguisher: _formValues['fireExtinguisher']!,
         lock: _formValues['lock']!,
         comment: _formValues['comment']!,
+        localImagePath: _selectedImagePath,
+        imageUrl: null,
       );
 
 
@@ -242,7 +257,11 @@ class _FormPageState extends State<FormPage> {
               const SizedBox(height: 20),
               ..._buildYesNoFields(),
               ImagePickerWidget(
-
+                onImagePicked: (imagePath) {
+                  setState(() {
+                    _selectedImagePath = imagePath;
+                  });
+                },
               ),
               TextFormField(
                 controller: _commentController,
@@ -369,6 +388,10 @@ class _FormPageState extends State<FormPage> {
   Future<void> _submitAllVehicles() async {
     try {
       for (final vehicle in _pendingVehicles) {
+        if (vehicle.localImagePath != null) {
+          final imageUrl =  await SupabaseVehicleRepository.instance().save(vehicle.localImagePath!);
+          vehicle.imageUrl = imageUrl; // Actualizar la URL de la imagen
+        }
         await _repository.save(vehicle);
       }
       if (mounted) {

@@ -16,8 +16,10 @@
     final String fireExtinguisher;
     final String lock;
     final String comment;
+    final String? localImagePath;
+    String? imageUrl;
 
-    const Vehicle({
+    Vehicle({
       this.id,
       required this.date,
       required this.patent,
@@ -33,6 +35,8 @@
       required this.fireExtinguisher,
       required this.lock,
       required this.comment,
+      this.localImagePath,
+      this.imageUrl,
     });
 
     factory Vehicle.fromFirestore(DocumentSnapshot doc) {
@@ -55,6 +59,7 @@
         fireExtinguisher: data['fireExtinguisher'] as String,
         lock: data['lock'] as String,
         comment: data['comment'] as String,
+        imageUrl: data['imageUrl'] as String,
       );
     }
 
@@ -74,6 +79,7 @@
         'fireExtinguisher': fireExtinguisher,
         'lock': lock,
         'comment': comment,
+        'imageUrl': imageUrl,
       };
     }
   }

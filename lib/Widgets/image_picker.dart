@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../Services/storage_services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class ImagePickerWidget extends StatefulWidget {
-  const ImagePickerWidget({super.key});
+  const ImagePickerWidget({super.key, required this.onImagePicked});
+
+  final Function(String) onImagePicked;
 
   @override
   State<ImagePickerWidget> createState() => _ImagePickerWidgetState();
@@ -16,22 +19,17 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-    }
-  }
 
-  Future<void> _uploadImage() async {
-    if (_image == null) return;
-    
-    try {
-      await SupabaseVehicleRepository.instance().save(_image!);
-      print("exitos");
-    } catch (e) {
-      print(e);
+    if (pickedFile != null) {
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = path.basename(pickedFile.path);
+      final savedImage = await File(pickedFile.path).copy('${appDir.path}/$fileName');
+
+      setState(() {
+        _image = savedImage;
+      });
+
+      widget.onImagePicked(savedImage.path);
     }
   }
 
@@ -46,23 +44,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
         ),
         const SizedBox(height: 20),
         if (_image != null)
-          Column(
-            children: [
-              Image.file(
-                _image!,
-                height: 200,
-                width: 200,
-                fit: BoxFit.cover,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _uploadImage,
-                child: const Text('Subir a Supabase'),
-              ),
-            ],
+          Image.file(
+            _image!,
+            height: 200,
+            width: 200,
+            fit: BoxFit.cover,
           ),
       ],
     );
   }
 }
-

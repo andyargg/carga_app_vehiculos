@@ -14,16 +14,22 @@ class SupabaseVehicleRepository {
   SupabaseVehicleRepository.instance() : _supabase = Supabase.instance.client;
   
   //guardar una imagen
-  Future<void> save(File? imageFile) async {
+  Future<String?> save(String? localImagePath) async {
     try {
-      if (imageFile != null) {
+      if (localImagePath != null) {
+
+        final imageFile = File(localImagePath);
+
         final fileName = '${DateTime.now().millisecondsSinceEpoch}_${path.basename(imageFile.path)}';
 
         
-        await _supabase.storage
+        final imageStorageUrl = await _supabase.storage
             .from(_imageBucket)
             .upload(fileName, imageFile);
+        
+        return imageStorageUrl;
       }
+      return null;
     } catch (e) {
       throw Exception('Error al guardar vehículo: $e');
     }
