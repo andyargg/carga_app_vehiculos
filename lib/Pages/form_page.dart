@@ -12,7 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
-import 'package:path/path.dart' as path;
+
 
 
 class FormPage extends StatefulWidget {
@@ -34,7 +34,8 @@ class _FormPageState extends State<FormPage> {
   final _empresaController = TextEditingController();
   final _commentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  String? _selectedImagePath;
+  File? _selectedImage;
+  final LocalImageService _localImageService = LocalImageService();
   
   void _scrollToTop() {
     _scrollController.animateTo(
@@ -99,61 +100,6 @@ class _FormPageState extends State<FormPage> {
   }
 
 
-  Future<void> _addForm() async {
-    _scrollToTop();
-    FocusScope.of(context).requestFocus(FocusNode()); 
-    if (!_formKey.currentState!.validate()) return;
-
-    try {
-      String? localImagePath;
-
-      if (_selectedImagePath != null) {
-        final fileName = '${DateTime.now().millisecondsSinceEpoch}_${path.basename(_selectedImagePath!)}';
-        localImagePath = await LocalImageService.saveImage(File(_selectedImagePath!), fileName);
-      }
-
-      final vehicle = Vehicle(
-        date: Timestamp.now(),
-        patent: _formValues['patent']!,
-        technician: _formValues['technician']!,
-        company: _formValues['company']!,
-        order: _formValues['order']!,
-        cleanliness: _formValues['cleanliness']!,
-        water: _formValues['water']!,
-        spareTire: _formValues['spareTire']!,
-        oil: _formValues['oil']!,
-        jack: _formValues['jack']!,
-        crossWrench: _formValues['crossWrench']!,
-        fireExtinguisher: _formValues['fireExtinguisher']!,
-        lock: _formValues['lock']!,
-        comment: _formValues['comment']!,
-        localImagePath: _selectedImagePath,
-        imageUrl: null,
-      );
-
-
-      if (_editingVehicleIndex >= 0) {
-        _pendingVehicles[_editingVehicleIndex] = vehicle;
-        _editingVehicleIndex = -1;
-      } else {
-        _pendingVehicles.add(vehicle);
-      }
-      _showSuccess('Vehículo agregado exitosamente');
-      _resetForm();
-    } catch (e) {
-      _showError('Error al agregar el vehículo: ${e.toString()}');
-    }
-  }
-  void _resetForm() {
-    setState(() {
-      _patenteController.clear();
-      _tecnicoController.clear();
-      _commentController.clear(); 
-      _empresaController.clear(); 
-      _formValues.updateAll((key, value) => ''); 
-      _editingVehicleIndex = -1;
-    });
-}
 
 
 
@@ -257,12 +203,19 @@ class _FormPageState extends State<FormPage> {
               const SizedBox(height: 20),
               ..._buildYesNoFields(),
               ImagePickerWidget(
-                onImagePicked: (imagePath) {
+                onImagePicked: (File? image) {
                   setState(() {
-                    _selectedImagePath = imagePath;
+                    _selectedImage = image;
                   });
                 },
               ),
+              if (_selectedImage != null)
+                Image.file(
+                  _selectedImage!,
+                  height: 150,
+                  width: 150,
+                  fit: BoxFit.cover,
+                ),
               TextFormField(
                 controller: _commentController,
                 maxLines: 3,
@@ -340,13 +293,17 @@ class _FormPageState extends State<FormPage> {
 
 
 
-  void _handleEditVehicle(int index) {
+  void _handleEditVehicle(int index) async {
     FocusScope.of(context).unfocus();
+    Navigator.of(context).pop();
+    _editingVehicleIndex = index;
+    
+    final vehicle = _pendingVehicles[index];
+    
+    File? imageFile = await _localImageService.getImage(vehicle.localImagePath!);
+    
     setState(() {
-      Navigator.of(context).pop();
-      _editingVehicleIndex = index;
-      final vehicle = _pendingVehicles[index];
-
+      _selectedImage = imageFile;
       _formValues = {
         'patent': vehicle.patent,
         'technician': vehicle.technician,
@@ -362,8 +319,6 @@ class _FormPageState extends State<FormPage> {
         'lock': vehicle.lock,
         'comment': vehicle.comment,
       };
-
-      // Sincronizar controladores con los valores editados
       _patenteController.text = _formValues['patent']!;
       _tecnicoController.text = _formValues['technician']!;
       _empresaController.text = _formValues['company']!;
@@ -372,10 +327,11 @@ class _FormPageState extends State<FormPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _formKey.currentState?.reset(); 
+        _formKey.currentState?.reset();
       }
     });
   }
+
   void _handleDeleteVehicle(int index) {
     setState(() {
       _pendingVehicles.removeAt(index);
@@ -403,6 +359,64 @@ class _FormPageState extends State<FormPage> {
       _showError('Error al registrar los vehículos: ${e.toString()}');
     }
   }
+  Future<void> _addForm() async {
+    FocusScope.of(context).requestFocus(FocusNode()); 
+    _scrollToTop();
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, selecciona una imagen')),
+      );
+      return;
+    }
+
+    try {
+
+      final String imagePath = await _localImageService.saveImage(_selectedImage!);
+
+      final vehicle = Vehicle(
+        date: Timestamp.now(),
+        patent: _formValues['patent']!,
+        technician: _formValues['technician']!,
+        company: _formValues['company']!,
+        order: _formValues['order']!,
+        cleanliness: _formValues['cleanliness']!,
+        water: _formValues['water']!,
+        spareTire: _formValues['spareTire']!,
+        oil: _formValues['oil']!,
+        jack: _formValues['jack']!,
+        crossWrench: _formValues['crossWrench']!,
+        fireExtinguisher: _formValues['fireExtinguisher']!,
+        lock: _formValues['lock']!,
+        comment: _formValues['comment']!,
+        localImagePath: imagePath,
+        imageUrl: null,
+      );
+
+
+      if (_editingVehicleIndex >= 0) {
+        _pendingVehicles[_editingVehicleIndex] = vehicle;
+        _editingVehicleIndex = -1;
+      } else {
+        _pendingVehicles.add(vehicle);
+      }
+      _showSuccess('Vehículo agregado exitosamente');
+      _resetForm();
+    } catch (e) {
+      _showError('Error al agregar el vehículo: ${e.toString()}');
+    }
+  }
+  void _resetForm() {
+    setState(() {
+      _patenteController.clear();
+      _tecnicoController.clear();
+      _commentController.clear(); 
+      _empresaController.clear(); 
+      _formValues.updateAll((key, value) => ''); 
+      _editingVehicleIndex = -1;
+      _selectedImage = null;
+    });
+}
 }
 
 
