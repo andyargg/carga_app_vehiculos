@@ -46,7 +46,6 @@ class _NavBarWidgetState extends State<NavBarWidget> {
               widget.pendingVehicles.isEmpty
                 ? const Padding(
                     padding: EdgeInsets.all(20.0),
-                    
                     child: Text(
                       style: TextStyle(
                         fontSize: 16,

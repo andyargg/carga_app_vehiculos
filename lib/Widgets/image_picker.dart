@@ -28,9 +28,37 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ElevatedButton(
-          onPressed: () => _pickImage(context),
-          child: const Text('Seleccionar imagen'),
+        SizedBox(
+          width: double.infinity,
+
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              elevation: 0,
+              side: BorderSide(color: Colors.grey, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8)
+              ),
+              padding: EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+              alignment: Alignment.centerLeft
+            ),
+            onPressed: () => _pickImage(context),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.image_outlined,
+                  color: Colors.grey,
+                  size: 25,
+                ), // Añade un icono
+                SizedBox(width: 10), // Espacio entre el icono y el texto
+                Text(
+                  'IMAGEN',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
