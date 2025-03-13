@@ -1,4 +1,4 @@
-import 'package:app_camionetas_empleado/Models/vehicle.dart';
+import 'package:shared_models/shared_models.dart';
 import 'package:flutter/material.dart';
 
 class NavBarWidget extends StatefulWidget {

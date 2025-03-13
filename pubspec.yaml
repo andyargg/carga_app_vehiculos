@@ -1,4 +1,4 @@
-name: app_camionetas_empleado
+name: carga_camionetas
 description: "A new Flutter project."
 publish_to: 'none'
 
@@ -21,6 +21,9 @@ dependencies:
   image_picker: ^1.0.7
   flutter_dotenv: ^5.2.1
   path_provider: ^2.1.5
+  intl: ^0.18.1
+  shared_models:
+    path: ../shared_models
 
 dev_dependencies:
   flutter_test:

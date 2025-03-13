@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../Models/vehicle.dart';
+import 'package:shared_models/shared_models.dart';
+
 
 class VehicleRepository {
   final FirebaseFirestore _firestore;

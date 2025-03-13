@@ -1,13 +1,14 @@
 import 'dart:io';
 
-import 'package:app_camionetas_empleado/Models/vehicle.dart';
-import 'package:app_camionetas_empleado/Services/local_image_service.dart';
-import 'package:app_camionetas_empleado/Services/storage_services.dart';
-import 'package:app_camionetas_empleado/Services/vehicle_repository.dart';
-import 'package:app_camionetas_empleado/Widgets/dropdown_widget.dart';
-import 'package:app_camionetas_empleado/Widgets/image_picker.dart';
-import 'package:app_camionetas_empleado/Widgets/nav_bar_widget.dart';
-import 'package:app_camionetas_empleado/Widgets/search_anchor_widget.dart';
+import 'package:shared_models/shared_models.dart';
+import 'package:carga_camionetas/Services/local_image_service.dart';
+import 'package:carga_camionetas/Services/storage_services.dart';
+import 'package:carga_camionetas/Services/vehicle_repository.dart';
+import 'package:carga_camionetas/Widgets/dropdown_widget.dart';
+import 'package:carga_camionetas/Widgets/image_picker.dart';
+import 'package:carga_camionetas/Widgets/nav_bar_widget.dart';
+import 'package:carga_camionetas/Widgets/search_anchor_widget.dart';
+import 'package:carga_camionetas/Widgets/snack_bar_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -93,7 +94,9 @@ class _FormPageState extends State<FormPage> {
       _tecnicos = List<String>.from(data['tecnicos']);
       _companies = List<String>.from(data['empresas']);
     } catch (e) {
-      _showError('Error loading initial data');
+      if (mounted) {
+        SnackBarWidget.showError(context, 'Error loading initial data');
+      }
     } finally {
       setState(() => _isLoading = false);
     }
@@ -289,18 +292,6 @@ Widget build(BuildContext context) {
   }
 
 
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green),
-    );
-  }
-
-  void _showError(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-    }
-  }
-
 
 
   void _handleEditVehicle(int index) async {
@@ -352,6 +343,11 @@ Widget build(BuildContext context) {
   }
 
   Future<void> _submitAllVehicles() async {
+    Navigator.pop(context);
+    if (mounted) {
+      _pendingVehicles.clear();
+      SnackBarWidget.showSuccess(context, 'Todos los vehículos se han registrado correctamente.');
+    } // Usa el context del Estado
     try {
       for (final vehicle in _pendingVehicles) {
         if (vehicle.localImagePath != null) {
@@ -360,13 +356,11 @@ Widget build(BuildContext context) {
         }
         await _repository.save(vehicle);
       }
-      if (mounted) {
-        Navigator.pop(context);
-        _pendingVehicles.clear();
-        _showSuccess('Todos los vehículos se han registrado correctamente.');
-      } // Usa el context del Estado
     } catch (e) {
-      _showError('Error al registrar los vehículos: ${e.toString()}');
+
+      if (mounted) {
+        SnackBarWidget.showError(context, 'Error al registrar los vehículos: ${e.toString()}');
+      }
     }
   }
   Future<void> _addForm() async {
@@ -375,7 +369,7 @@ Widget build(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, selecciona una imagen')),
+        const SnackBar(content: Text('Por favor, selecciona una imagen'), duration: Duration(milliseconds:300),),
       );
       return;
     }
@@ -410,10 +404,14 @@ Widget build(BuildContext context) {
       } else {
         _pendingVehicles.add(vehicle);
       }
-      _showSuccess('Vehículo agregado exitosamente');
+      if (mounted) {
+        SnackBarWidget.showSuccess(context, 'Vehículo agregado exitosamente');
+      }
       _resetForm();
     } catch (e) {
-      _showError('Error al agregar el vehículo: ${e.toString()}');
+      if (mounted) {
+        SnackBarWidget.showError(context, 'Error al agregar el vehículo: ${e.toString()}');
+      }
     }
   }
   void _resetForm() {
