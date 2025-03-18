@@ -7,6 +7,7 @@ class VehicleRepository {
   final FirebaseFirestore _firestore;
 
   VehicleRepository(this._firestore);
+  
 
   Future<String> save(Vehicle vehicle) async {
     final data = vehicle.toMap();

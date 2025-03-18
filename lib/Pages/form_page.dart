@@ -41,7 +41,7 @@ class _FormPageState extends State<FormPage> {
   void _scrollToTop() {
     _scrollController.animateTo(
       0, // Desplazarse hasta la posición 0 (arriba)
-      duration: Duration(milliseconds: 500), // Duración de la animación
+      duration: Duration(milliseconds: 300), // Duración de la animación
       curve: Curves.easeInOut, // Curva de animación
     );
   }
@@ -63,6 +63,7 @@ class _FormPageState extends State<FormPage> {
   };
 
   bool _isLoading = true;
+  bool _isSending = false;
   List<String> _patentes = [];
   List<String> _tecnicos = [];
   List<String> _companies = [];
@@ -112,6 +113,10 @@ Widget build(BuildContext context) {
 
   // Lista con los widgets de tu formulario, sin incluir SizedBox para espaciar.
   final formWidgets = <Widget>[
+    if (_isSending)
+        Center(
+          child: CircularProgressIndicator(),
+    ),
     SearchAnchorWidget(
       hint: 'Patentes',
       suggestions: _patentes,
@@ -218,6 +223,7 @@ Widget build(BuildContext context) {
         child: const Text('AGREGAR', style: TextStyle(fontSize: 16)),
       ),
     ),
+    
   ];
 
   return Scaffold(
@@ -342,27 +348,44 @@ Widget build(BuildContext context) {
     });
   }
 
+
   Future<void> _submitAllVehicles() async {
-    Navigator.pop(context);
-    if (mounted) {
-      _pendingVehicles.clear();
-      SnackBarWidget.showSuccess(context, 'Todos los vehículos se han registrado correctamente.');
-    } // Usa el context del Estado
+    Navigator.pop(context); 
+    _scrollToTop();
+    
+    setState(() {
+      _isSending = true;
+    });
+
+    
     try {
       for (final vehicle in _pendingVehicles) {
         if (vehicle.localImagePath != null) {
-          final imageUrl =  await SupabaseVehicleRepository.instance().save(vehicle.localImagePath!);
-          vehicle.imageUrl = imageUrl; // Actualizar la URL de la imagen
+          final imageUrl = await SupabaseVehicleRepository.instance().save(vehicle.localImagePath!);
+          vehicle.imageUrl = imageUrl; 
         }
         await _repository.save(vehicle);
       }
-    } catch (e) {
 
+      if (mounted) {
+        SnackBarWidget.showSuccess(context, 'Todos los vehículos se han registrado correctamente.');
+      }
+
+      _pendingVehicles.clear();
+
+    } catch (e) {
       if (mounted) {
         SnackBarWidget.showError(context, 'Error al registrar los vehículos: ${e.toString()}');
       }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSending = false;
+        });
+      }
     }
   }
+
   Future<void> _addForm() async {
     FocusScope.of(context).requestFocus(FocusNode()); 
     _scrollToTop();
