@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:shared_models/shared_models.dart';
 import 'package:carga_camionetas/Services/local_image_service.dart';
-import 'package:carga_camionetas/Services/storage_services.dart';
-import 'package:carga_camionetas/Services/vehicle_repository.dart';
 import 'package:carga_camionetas/Widgets/dropdown_widget.dart';
 import 'package:carga_camionetas/Widgets/image_picker.dart';
 import 'package:carga_camionetas/Widgets/nav_bar_widget.dart';
@@ -39,12 +37,14 @@ class _FormPageState extends State<FormPage> {
   final LocalImageService _localImageService = LocalImageService();
   
   void _scrollToTop() {
+  if (_scrollController.hasClients) {
     _scrollController.animateTo(
-      0, // Desplazarse hasta la posición 0 (arriba)
-      duration: Duration(milliseconds: 300), // Duración de la animación
-      curve: Curves.easeInOut, // Curva de animación
+      0, 
+      duration: Duration(milliseconds: 500), 
+      curve: Curves.easeInOut
     );
   }
+}
 
   Map<String, String> _formValues = {
     'patent': '',
@@ -388,7 +388,12 @@ Widget build(BuildContext context) {
 
   Future<void> _addForm() async {
     FocusScope.of(context).requestFocus(FocusNode()); 
-    _scrollToTop();
+
+
+    Future.delayed(Duration(milliseconds: 100), () {
+      _scrollToTop();
+    });
+
     if (!_formKey.currentState!.validate()) return;
     if (_selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
