@@ -31,12 +31,15 @@ dev_dependencies:
 
   flutter_lints: ^5.0.0
 
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/reparacion-de-autos.png"
 
 flutter:
   uses-material-design: true
 
   assets:
     - assets/data.json
-    - assets/icon/camioneta.png
     - .env
 
