@@ -6,7 +6,6 @@ import 'package:carga_camionetas/Widgets/dropdown_widget.dart';
 import 'package:carga_camionetas/Widgets/image_picker.dart';
 import 'package:carga_camionetas/Widgets/nav_bar_widget.dart';
 import 'package:carga_camionetas/Widgets/search_anchor_widget.dart';
-import 'package:carga_camionetas/Widgets/snack_bar_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
