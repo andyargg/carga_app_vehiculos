@@ -10,6 +10,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'package:image/image.dart' as img;
+import 'package:path_provider/path_provider.dart';
 
 
 
@@ -35,15 +37,32 @@ class _FormPageState extends State<FormPage> {
   File? _selectedImage;
   final LocalImageService _localImageService = LocalImageService();
   
-  void _scrollToTop() {
-  if (_scrollController.hasClients) {
-    _scrollController.animateTo(
-      0, 
-      duration: Duration(milliseconds: 500), 
-      curve: Curves.easeInOut
-    );
+
+  Future<File?> _convertToJpg(File originalImage) async {
+    final bytes = await originalImage.readAsBytes();
+    final image = img.decodeImage(bytes);
+    
+    if (image == null) return null;
+
+    final jpgBytes = img.encodeJpg(image, quality: 90);
+
+    final dir = await getTemporaryDirectory();
+    final newPath = '${dir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+    final newFile = File(newPath);
+    await newFile.writeAsBytes(jpgBytes);
+    return newFile;
   }
-}
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0, 
+        duration: Duration(milliseconds: 500), 
+        curve: Curves.easeInOut
+      );
+    }
+  }
 
   Map<String, String> _formValues = {
     'patent': '',
@@ -175,10 +194,15 @@ Widget build(BuildContext context) {
     // Agregamos los campos de sí/no
     ..._buildYesNoFields(),
     ImagePickerWidget(
-      onImagePicked: (File? image) {
-        setState(() {
-          _selectedImage = image;
-        });
+      onImagePicked: (File? image) async {
+        if (image != null) {
+          final jpgImage = await _convertToJpg(image);
+          if (jpgImage != null) {
+            setState(() {
+              _selectedImage = jpgImage;
+            });
+          }
+        }
       },
     ),
     if (_selectedImage != null)

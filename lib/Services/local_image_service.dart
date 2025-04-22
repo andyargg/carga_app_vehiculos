@@ -18,11 +18,9 @@ class LocalImageService {
       if (await imageFile.exists()) {
         return imageFile;
       } else {
-        print('El archivo no existe en la ruta: $imagePath');
         return null;
       }
     } catch (e) {
-      print('Error al obtener la imagen: $e');
       return null;
     }
   }
