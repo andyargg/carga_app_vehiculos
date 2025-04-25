@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:carga_camionetas/Widgets/date_picker_widget.dart';
 import 'package:shared_models/shared_models.dart';
 import 'package:carga_camionetas/Services/local_image_service.dart';
 import 'package:carga_camionetas/Widgets/dropdown_widget.dart';
@@ -68,6 +69,7 @@ class _FormPageState extends State<FormPage> {
     'patent': '',
     'technician': '',
     'company': '',
+    'generalMechanics': '',
     'order': '',
     'cleanliness': '',
     'water': '',
@@ -78,6 +80,11 @@ class _FormPageState extends State<FormPage> {
     'fireExtinguisher': '',
     'lock': '',
     'comment': '',
+  };
+
+  Map<String, DateTime?> _dateValues = {
+    'oilChange': null,
+    'motorBeltChange': null,
   };
 
   bool _isLoading = true;
@@ -126,170 +133,199 @@ class _FormPageState extends State<FormPage> {
 
 
   @override
-Widget build(BuildContext context) {
-  if (_isLoading) return const Center(child: CircularProgressIndicator());
+  Widget build(BuildContext context) {
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
 
-  // Lista con los widgets de tu formulario, sin incluir SizedBox para espaciar.
-  final formWidgets = <Widget>[
-    if (_isSending)
-        Center(
-          child: CircularProgressIndicator(),
-    ),
-    SearchAnchorWidget(
-      hint: 'Patentes',
-      suggestions: _patentes,
-      formKey: 'patent',
-      formValues: _formValues,
-      controller: _patenteController,
-      onItemSelected: (value) {
-        setState(() => _formValues['patent'] = value);
-      },
-    ),
-    SearchAnchorWidget(
-      hint: 'Busca tecnico',
-      suggestions: _tecnicos,
-      formKey: 'technician',
-      formValues: _formValues,
-      controller: _tecnicoController,
-      onItemSelected: (value) {
-        setState(() => _formValues['technician'] = value);
-      },
-    ),
-    SearchAnchorWidget(
-      hint: 'Busca empresa',
-      suggestions: _companies,
-      formKey: 'company',
-      formValues: _formValues,
-      controller: _empresaController,
-      onItemSelected: (value) {
-        setState(() => _formValues['company'] = value);
-      },
-    ),
-    DropdownWidget(
-      label: 'Orden',
-      options: _formOptions['cleanliness']!,
-      formKey: 'order', 
-      formValues: _formValues,
-      onChanged: (value) {
-        if (value != null) {
-          setState(() => _formValues['order'] = value);
-        }
-      },
-      prefixIcon: Icons.grid_view,
-      prefixIconColor: Colors.deepOrange,
-    ),
-    DropdownWidget(
-      label: 'Limpieza',
-      options: _formOptions['cleanliness']!,
-      formKey: 'cleanliness',
-      formValues: _formValues,
-      onChanged: (value) {
-        if (value != null) {
-          setState(() => _formValues['cleanliness'] = value);
-        }
-      },
-      prefixIcon: Icons.cleaning_services_outlined,
-      prefixIconColor: Colors.brown,
-    ),
-    // Agregamos los campos de sí/no
-    ..._buildYesNoFields(),
-    ImagePickerWidget(
-      onImagePicked: (File? image) async {
-        if (image != null) {
-          final jpgImage = await _convertToJpg(image);
-          if (jpgImage != null) {
-            setState(() {
-              _selectedImage = jpgImage;
-            });
-          }
-        }
-      },
-    ),
-    if (_selectedImage != null)
-      Row(
-        children: [
-          const SizedBox(width: 10), // Espacio entre el icono y la imagen
-          Image.file(
-            _selectedImage!,
-            height: 50,
-            width: 50,
-            fit: BoxFit.cover,
-          ),
-          IconButton(
-            icon: Icon(Icons.delete, color: Colors.red),
-            onPressed: () {
-              setState(() {
-                _selectedImage = null;
-              });
-            },
-          ),
-        ],
-    ),
-    TextFormField(
-      controller: _commentController,
-      maxLines: 3,
-      decoration: const InputDecoration(
-        labelText: 'Comentario',
-        border: OutlineInputBorder(),
+    final formWidgets = <Widget>[
+      if (_isSending)
+          Center(
+            child: CircularProgressIndicator(),
       ),
-      onChanged: (value) => _formValues['comment'] = value,
-    ),
-    SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.black,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12.0),
+      SearchAnchorWidget(
+        hint: 'Patentes',
+        suggestions: _patentes,
+        formKey: 'patent',
+        formValues: _formValues,
+        controller: _patenteController,
+        onItemSelected: (value) {
+          setState(() => _formValues['patent'] = value);
+        },
+      ),
+      SearchAnchorWidget(
+        hint: 'Busca tecnico',
+        suggestions: _tecnicos,
+        formKey: 'technician',
+        formValues: _formValues,
+        controller: _tecnicoController,
+        onItemSelected: (value) {
+          setState(() => _formValues['technician'] = value);
+        },
+      ),
+      SearchAnchorWidget(
+        hint: 'Busca empresa',
+        suggestions: _companies,
+        formKey: 'company',
+        formValues: _formValues,
+        controller: _empresaController,
+        onItemSelected: (value) {
+          setState(() => _formValues['company'] = value);
+        },
+      ),
+      DatePickerWidget(
+        buttonText: 'Cambio de aceite',
+        prefixIcon: Icons.oil_barrel,
+        prefixIconColor: Colors.black,
+        onDateSelected: (date) {
+          setState(() {
+            _dateValues['oilChange'] = date;
+          });
+        },
+      ),
+
+      DatePickerWidget(
+        buttonText: 'Cambio de correa',
+        prefixIcon: Icons.link,
+        prefixIconColor: Colors.deepPurpleAccent,
+        onDateSelected: (date) {
+          setState(() {
+            _dateValues['motorBeltChange'] = date;
+          });
+        },
+      ),
+      TextFormField(
+        controller: _commentController,
+        maxLines: 1,
+        decoration: const InputDecoration(
+          prefixIcon: Icon(Icons.settings, color: Colors.red, size: 23,),
+          labelText: 'Mecanica general',
+          border: OutlineInputBorder(),
         ),
-        onPressed: _addForm,
-        child: const Text('AGREGAR', style: TextStyle(fontSize: 16)),
+        onChanged: (value) => _formValues['generalMechanics'] = value,
       ),
-    ),
-    
-  ];
+      DropdownWidget(
+        label: 'Orden',
+        options: _formOptions['cleanliness']!,
+        formKey: 'order', 
+        formValues: _formValues,
+        onChanged: (value) {
+          if (value != null) {
+            setState(() => _formValues['order'] = value);
+          }
+        },
+        prefixIcon: Icons.grid_view,
+        prefixIconColor: Colors.deepOrange,
+      ),
+      DropdownWidget(
+        label: 'Limpieza',
+        options: _formOptions['cleanliness']!,
+        formKey: 'cleanliness',
+        formValues: _formValues,
+        onChanged: (value) {
+          if (value != null) {
+            setState(() => _formValues['cleanliness'] = value);
+          }
+        },
+        prefixIcon: Icons.cleaning_services_outlined,
+        prefixIconColor: Colors.brown,
+      ),
+      ..._buildYesNoFields(),
+      ImagePickerWidget(
+        onImagePicked: (File? image) async {
+          if (image != null) {
+            final jpgImage = await _convertToJpg(image);
+            if (jpgImage != null) {
+              setState(() {
+                _selectedImage = jpgImage;
+              });
+            }
+          }
+        },
+      ),
+      if (_selectedImage != null)
+        Row(
+          children: [
+            const SizedBox(width: 10), 
+            Image.file(
+              _selectedImage!,
+              height: 50,
+              width: 50,
+              fit: BoxFit.cover,
+            ),
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                setState(() {
+                  _selectedImage = null;
+                });
+              },
+            ),
+          ],
+      ),
+      TextFormField(
+        controller: _commentController,
+        maxLines: 3,
+        decoration: const InputDecoration(
+          labelText: 'Comentario',
+          border: OutlineInputBorder(),
+        ),
+        onChanged: (value) => _formValues['comment'] = value,
+      ),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+          ),
+          onPressed: _addForm,
+          child: const Text('AGREGAR', style: TextStyle(fontSize: 16)),
+        ),
+      ),
+      
+    ];
 
-  return Scaffold(
-    backgroundColor: Colors.white,
-    appBar: AppBar(
-      title: const Text(
-        'Registro de vehículos',
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text(
+          'Registro de vehículos',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.black,
+        elevation: 4,
+        centerTitle: true,
+        iconTheme: const IconThemeData(
           color: Colors.white,
         ),
       ),
-      backgroundColor: Colors.black,
-      elevation: 4,
-      centerTitle: true,
-      iconTheme: const IconThemeData(
-        color: Colors.white,
+      drawer: NavBarWidget(
+        pendingVehicles: _pendingVehicles,
+        onEditVehicle: _handleEditVehicle,
+        onDeleteVehicle: _handleDeleteVehicle,
+        onSubmitAll: _submitAllVehicles,
       ),
-    ),
-    drawer: NavBarWidget(
-      pendingVehicles: _pendingVehicles,
-      onEditVehicle: _handleEditVehicle,
-      onDeleteVehicle: _handleDeleteVehicle,
-      onSubmitAll: _submitAllVehicles,
-    ),
-    body: SingleChildScrollView(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(16),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: formWidgets
-              .map((widget) => Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: widget,
-                  ))
-              .toList(),
+      body: SingleChildScrollView(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: formWidgets
+                .map((widget) => Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: widget,
+                    ))
+                .toList(),
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
 
 
@@ -327,17 +363,19 @@ Widget build(BuildContext context) {
     FocusScope.of(context).unfocus();
     Navigator.of(context).pop();
     _editingVehicleIndex = index;
-    
+
     final vehicle = _pendingVehicles[index];
-    
+
     File? imageFile = await _localImageService.getImage(vehicle.localImagePath!);
-    
+
     setState(() {
       _selectedImage = imageFile;
+
       _formValues = {
         'patent': vehicle.patent,
         'technician': vehicle.technician,
         'company': vehicle.company,
+        'generalMechanics': vehicle.generalMechanics ?? '',
         'order': vehicle.order,
         'cleanliness': vehicle.cleanliness,
         'water': vehicle.water,
@@ -349,6 +387,12 @@ Widget build(BuildContext context) {
         'lock': vehicle.lock,
         'comment': vehicle.comment,
       };
+
+      _dateValues = {
+        'oilChange': vehicle.oilChange,
+        'motorBeltChange': vehicle.motorBeltChange,
+      };
+
       _patenteController.text = _formValues['patent']!;
       _tecnicoController.text = _formValues['technician']!;
       _empresaController.text = _formValues['company']!;
@@ -361,6 +405,7 @@ Widget build(BuildContext context) {
       }
     });
   }
+
 
   void _handleDeleteVehicle(int index) {
     setState(() {
@@ -410,23 +455,20 @@ Widget build(BuildContext context) {
   }
 
   Future<void> _addForm() async {
-    FocusScope.of(context).requestFocus(FocusNode()); 
-
+    FocusScope.of(context).requestFocus(FocusNode());
 
     Future.delayed(Duration(milliseconds: 100), () {
       _scrollToTop();
     });
 
     if (!_formKey.currentState!.validate()) return;
+
     if (_selectedImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, selecciona una imagen'), duration: Duration(milliseconds:300),),
-      );
+      SnackBarWidget.showError(context, 'Por favor, selecciona una imagen');
       return;
     }
 
     try {
-
       final String imagePath = await _localImageService.saveImage(_selectedImage!);
 
       final vehicle = Vehicle(
@@ -434,6 +476,9 @@ Widget build(BuildContext context) {
         patent: _formValues['patent']!,
         technician: _formValues['technician']!,
         company: _formValues['company']!,
+        motorBeltChange: _dateValues['motorBeltChange'],
+        oilChange: _dateValues['oilChange'],
+        generalMechanics: _formValues['generalMechanics'],
         order: _formValues['order']!,
         cleanliness: _formValues['cleanliness']!,
         water: _formValues['water']!,
@@ -448,16 +493,17 @@ Widget build(BuildContext context) {
         imageUrl: null,
       );
 
-
       if (_editingVehicleIndex >= 0) {
         _pendingVehicles[_editingVehicleIndex] = vehicle;
         _editingVehicleIndex = -1;
       } else {
         _pendingVehicles.add(vehicle);
       }
+
       if (mounted) {
         SnackBarWidget.showSuccess(context, 'Vehículo agregado exitosamente');
       }
+
       _resetForm();
     } catch (e) {
       if (mounted) {
@@ -465,17 +511,22 @@ Widget build(BuildContext context) {
       }
     }
   }
+
   void _resetForm() {
     setState(() {
       _patenteController.clear();
       _tecnicoController.clear();
-      _commentController.clear(); 
-      _empresaController.clear(); 
-      _formValues.updateAll((key, value) => ''); 
+      _empresaController.clear();
+      _commentController.clear();
+
+      _formValues.updateAll((key, value) => '');
+      _dateValues.updateAll((key, value) => null);
+
       _editingVehicleIndex = -1;
       _selectedImage = null;
+      print("After reset: $_dateValues");
     });
-}
+  }
 }
 
 

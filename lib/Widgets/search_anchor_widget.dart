@@ -108,8 +108,8 @@ class _SearchAnchorWidgetState extends State<SearchAnchorWidget> {
                   elevation: WidgetStateProperty.all(0), 
                   shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      side: BorderSide(color: Colors.grey, width: 2), 
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(color: const Color.fromARGB(255, 202, 201, 201), width: 2), 
                     ),
                   ),
                   onTap: () {
